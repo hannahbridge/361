@@ -1,3 +1,6 @@
+//CISC361 Project 1
+//Hannah Bridge
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +18,11 @@ typedef struct mp3{
 mp3_t* head = NULL;
 mp3_t* tail = NULL;
 
+/*
+* summary: creates an mp3 entry based on user input
+* params: char*, char*, int, int
+* return: mp3 struct
+*/
 mp3_t* createNewMp3(char* name, char* title, int year, int time){
 	mp3_t* newMp3 = (struct mp3*)malloc(sizeof(struct mp3));
 	
@@ -38,23 +46,30 @@ mp3_t* createNewMp3(char* name, char* title, int year, int time){
 	return newMp3;
 }
 
+/*
+* summary: adds an mp3 entry to the end of the doubly linked list
+* params: char*, char*, int, int
+* return: none
+*/
 void addMp3ToTail(char* name, char* title, int year, int time){
-	mp3_t* temp = head;
 	mp3_t* mp3ToAdd = createNewMp3(name, title, year, time);
 
 	if(head == NULL){
 		head = mp3ToAdd;
-		return;
+		tail = mp3ToAdd;
 	}
-	while(temp->next != NULL){
-		temp = temp->next;
+	else{
+		tail->next = mp3ToAdd;
+		mp3ToAdd->prev = tail;
+		tail = mp3ToAdd;
 	}
-
-	temp->next = mp3ToAdd;
-	mp3ToAdd->prev = temp;
-	tail = mp3ToAdd;
 }
 
+/* 
+* summary: prints out an mp3 entry
+* params: mp3 struct 
+* return: none
+*/
 void printMp3(mp3_t *entry){
         printf("Artist name: %s\n", entry->artistName);
         printf("Song title: %s\n", entry->songTitle);
@@ -62,6 +77,11 @@ void printMp3(mp3_t *entry){
         printf("Year released: %d\n", entry->yearReleased);
 }
 
+/*
+* summary: prints out the doubly linked list from beginning to end
+* params: none
+* return: none
+*/
 void printMp3DLL(){
         mp3_t* temp = head;
         while(temp != NULL){
@@ -71,6 +91,11 @@ void printMp3DLL(){
         }
 }
 
+/*
+* summary: prints out the doubly linked list from end to beginning (reverse print)
+* params: none
+* return: none
+*/
 void reversePrintMp3DLL(){
         mp3_t* temp = tail;
         while(temp != NULL){
@@ -79,6 +104,12 @@ void reversePrintMp3DLL(){
                 temp = temp->prev;
         }
 }
+
+/*
+* summary: gets user input (artist name, song title, song year, song run time) to create an mp3 entry
+* params: none
+* return: none
+*/
 void getUserInput(){
 	char artist[BUFFERSIZE], song[BUFFERSIZE];
 	int songYear, songTime;
@@ -95,7 +126,12 @@ void getUserInput(){
         addMp3ToTail(artist, song, songYear, songTime);
 }
 
-void deleteSong(mp3_t* mp3ToDelete){
+/*
+* summary: deletes an mp3 entry from the list
+* params: mp3 struct
+* return: none
+*/
+void deleteEntry(mp3_t* mp3ToDelete){
 	if(mp3ToDelete == NULL || head == NULL)
 		return;	
 	if(head == mp3ToDelete)
@@ -104,19 +140,26 @@ void deleteSong(mp3_t* mp3ToDelete){
 		mp3ToDelete->next->prev = mp3ToDelete->prev;
 	if(mp3ToDelete->prev != NULL)
                 mp3ToDelete->prev->next = mp3ToDelete->next;
+	
+	free(mp3ToDelete->artistName);
+	free(mp3ToDelete->songTitle);
 	free(mp3ToDelete);
 }
 
+/*
+* summary: deletes all mp3 entries which have the same artist name
+* params: mp3 struct
+* return: none
+*/
 void deleteAllSongsByArtist(mp3_t** head){
 	char artistToDelete[BUFFERSIZE];
 	int len;
-	char *artist;
-
+	char *artist = (char *)malloc(len);
+	
 	printf("Enter the artist's name of whose song(s) you would like to delete: ");
         if(fgets(artistToDelete, BUFFERSIZE, stdin) != NULL){
 		len = (int)strlen(artistToDelete);
 		artistToDelete[len-1] = '\0';
-		artist = (char *)malloc(len);
 		strcpy(artist, artistToDelete);	
 	}
 	
@@ -129,7 +172,7 @@ void deleteAllSongsByArtist(mp3_t** head){
 	while(current != NULL){
 		if(strcmp(current->artistName, artist) == 0){
 			next = current->next;
-			deleteSong(current);
+			deleteEntry(current);
 			current = next;
 		}
 		else
@@ -137,10 +180,16 @@ void deleteAllSongsByArtist(mp3_t** head){
 	}
 
 	printf("\n");
-	printf("DLL AFTER REMOVING ARTIST: \n");
-	printMp3DLL();
+	printf("DLL AFTER REMOVING ARTIST: \n\n");
+	printMp3DLL();	
+	free(artist);
 }
 
+/*
+* summary: displays menu for user
+* params: none
+* return: none
+*/
 void displayMenu(){
 	printf("*************MENU*************\n");
     	printf("*Press a number for selection*\n");
@@ -152,16 +201,20 @@ void displayMenu(){
     	printf("******************************\n");
 }
 
-void freeEverything(mp3_t** head, mp3_t** tail){
+/*
+* summary: frees the memory allocated for each mp3 struct
+* params: mp3 struct
+* return: none
+*/
+void freeEverything(mp3_t** head){
 	mp3_t* temp = *head;
 	while(temp != NULL){
 		free(temp->artistName);
 		free(temp->songTitle);
-		free(temp);
+		mp3_t* curr = temp;
 		temp = temp->next;
+		free(curr);
 	}
-	free(head);
-	free(tail);
 }
 
 int main(){
@@ -194,7 +247,7 @@ int main(){
 		}
 	}
 
-	freeEverything(&head, &tail);
+	freeEverything(&head);
 
 	return 0;
 }
