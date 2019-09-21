@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "mp3.h"
 #define BUFFERSIZE 128
 
 typedef struct mp3{
